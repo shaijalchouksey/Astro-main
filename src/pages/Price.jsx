@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
-import { useState } from "react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import api from '../api';
@@ -64,36 +63,35 @@ const plans = [
 ];
 
 const PricingPage = () => {
-    // Modal aur form se related extra states hata di gayi hain
 
     const displayRazorpay = async (plan) => {
-        const idToken = localStorage.getItem('authToken');
-
-        if (!idToken) {
+        // 1. Token ko sahi naam ('token') se localStorage se nikalo
+        const token = localStorage.getItem('token');
+        if (!token) {
             alert("Please log in to make a payment.");
             return;
         }
 
-        const amount = plan.price;
+        const amountInRupees = plan.price;
         const description = plan.pack || plan.description;
 
         try {
+            // 2. Amount ko paise mein convert karo (e.g., 1200 * 100 = 120000)
+            const amountInPaise = amountInRupees * 100;
+
+            // 3. 'create-order' API call karo. Header daalne ki zaroorat nahi,
+            //    kyunki humara api.js waala interceptor yeh kaam apne aap kar dega.
             const { data: { id: order_id, currency } } = await api.post(
                 '/api/payment/create-order',
                 {
-                    amount: amount,
+                    amount: amountInPaise,
                     receipt: `receipt_plan_${new Date().getTime()}`
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`
-                    }
                 }
             );
 
             const options = {
-                key: "rzp_test_RPNPg6A7yl1KPA",
-                amount: amount * 100,
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Key ko .env file se lein
+                amount: amountInPaise,
                 currency: currency,
                 name: "Astro App Plan",
                 description: description,
@@ -106,15 +104,8 @@ const PricingPage = () => {
                     };
 
                     try {
-                        const verificationResponse = await api.post(
-                            '/api/payment/verify',
-                            data,
-                            {
-                                headers: {
-                                    Authorization: `Bearer ${idToken}`
-                                }
-                            }
-                        );
+                        // 4. 'verify' API call karo. Yahaan bhi header ki zaroorat nahi.
+                        const verificationResponse = await api.post('/api/payment/verify', data);
                         alert(verificationResponse.data.message);
                     } catch (error) {
                         console.error("Payment verification failed:", error);
@@ -134,7 +125,11 @@ const PricingPage = () => {
             paymentObject.open();
         } catch (error) {
             console.error("Error creating Razorpay order:", error.response ? error.response.data : error.message);
-            alert("Could not initiate payment. Please try again.");
+            if (error.response && error.response.status === 401) {
+                alert("Your session has expired. Please log in again.");
+            } else {
+                alert("Could not initiate payment. Please try again.");
+            }
         }
     };
 
@@ -194,7 +189,6 @@ const PricingPage = () => {
                                 </ul>
                             </div>
 
-                            {/* "Buy Plan" button ab seedha displayRazorpay ko call karega */}
                             <button
                                 onClick={() => displayRazorpay(plan)}
                                 className="w-full bg-white text-black font-semibold py-3 rounded-xl hover:bg-[#FFD700] transition mt-4"
@@ -205,9 +199,7 @@ const PricingPage = () => {
                     ))}
                 </div>
             </div>
-
-            {/* Modal aur form ko poori tarah se hata diya gaya hai */}
-
+            
             <Footer />
         </div>
     );
