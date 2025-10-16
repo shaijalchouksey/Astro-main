@@ -12,12 +12,10 @@ const QuestionAnswerPage = () => {
     const [unlockedQuestions, setUnlockedQuestions] = useState([]);
     const [showPayment, setShowPayment] = useState(null);
 
-    // USER DATA STATE UPDATE KIYA GAYA HAI
-    // Name aur Email state mein rakhe hain payment ke liye, lekin form se hata diye hain.
     const [userData, setUserData] = useState({
         name: "", // Will be used for payment prefill
         email: "", // Will be used for payment prefill
-        gender: "male", // Default value, form se hata diya gaya hai
+        gender: "male",
         dob: "",
         timeOfBirth: "",
         placeOfBirth: "",
@@ -89,10 +87,11 @@ const QuestionAnswerPage = () => {
         ],
     };
 
-    // --- PAYMENT GATEWAY LOGIC ---
-    const displayRazorpay = async (amount) => {
-        const idToken = localStorage.getItem('authToken');
-        if (!idToken) {
+    // --- PAYMENT GATEWAY LOGIC (UPDATED & CORRECTED) ---
+    const displayRazorpay = async (amountInRupees) => {
+        // 1. Token ko sahi naam ('token') se localStorage se nikalo
+        const token = localStorage.getItem('token');
+        if (!token) {
             alert("Please log in to make a payment.");
             return;
         }
@@ -100,15 +99,18 @@ const QuestionAnswerPage = () => {
         const questionText = questions[showPayment.tab][showPayment.index].text;
 
         try {
+            // 2. Amount ko paise mein convert karo (e.g., 99 * 100 = 9900)
+            const amountInPaise = amountInRupees * 100;
+
+            // 3. 'create-order' API call karo. Header daalne ki zaroorat nahi.
             const { data: { id: order_id, currency } } = await api.post(
                 '/api/payment/create-order',
-                { amount, receipt: `receipt_question_${new Date().getTime()}` },
-                { headers: { Authorization: `Bearer ${idToken}` } }
+                { amount: amountInPaise, receipt: `receipt_question_${new Date().getTime()}` }
             );
 
             const options = {
-                key: "rzp_test_RPNPg6A7yl1KPA",
-                amount: amount * 100,
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Key ko .env file se lein
+                amount: amountInPaise,
                 currency: currency,
                 name: "Astro App Question",
                 description: questionText,
@@ -121,11 +123,8 @@ const QuestionAnswerPage = () => {
                     };
 
                     try {
-                        const verificationResponse = await api.post(
-                            '/api/payment/verify',
-                            data,
-                            { headers: { Authorization: `Bearer ${idToken}` } }
-                        );
+                        // 4. 'verify' API call karo. Yahaan bhi header ki zaroorat nahi.
+                        const verificationResponse = await api.post('/api/payment/verify', data);
                         alert(verificationResponse.data.message);
                         
                         setUnlockedQuestions([
@@ -152,13 +151,15 @@ const QuestionAnswerPage = () => {
             paymentObject.open();
         } catch (error) {
             console.error("Error creating Razorpay order:", error.response ? error.response.data : error.message);
-            alert("Could not initiate payment. Please try again.");
+            if (error.response && error.response.status === 401) {
+                alert("Your session has expired. Please log in again.");
+            } else {
+                alert("Could not initiate payment. Please try again.");
+            }
         }
     };
 
     const handlePayment = () => {
-        // We can pre-populate name and email from user's profile if they are logged in.
-        // For now, let's just proceed.
         if (showPayment) {
             displayRazorpay(showPayment.price);
         }
@@ -174,7 +175,6 @@ const QuestionAnswerPage = () => {
     };
 
     const handleSubmitDetails = () => {
-        // VALIDATION UPDATE KI GAYI HAI
         if(!userData.dob || !userData.timeOfBirth || !userData.placeOfBirth){
              alert("Please fill in Date, Time, and Place of Birth and save.");
              return;
@@ -199,9 +199,7 @@ const QuestionAnswerPage = () => {
                 <h2 className="text-2xl font-bold mb-4 text-white text-center">
                     Enter Your Birth Details
                 </h2>
-                {/* FORM UPDATE KIYA GAYA HAI */}
                 <form className="grid md:grid-cols-2 gap-4">
-                    {/* Name, Email, Gender fields hata diye gaye hain */}
                     <input
                         type="date"
                         name="dob"
