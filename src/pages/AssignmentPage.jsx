@@ -26,24 +26,29 @@ const AssignmentPage = () => {
         "Write about a mentor who influenced your personal development."
     ];
 
-    // --- PAYMENT GATEWAY LOGIC ---
-    const displayRazorpay = async (amount) => {
-        const idToken = localStorage.getItem('authToken');
-        if (!idToken) {
+    // --- PAYMENT GATEWAY LOGIC (UPDATED & CORRECTED) ---
+    const displayRazorpay = async (amountInRupees) => {
+        // 1. Token ko sahi naam ('token') se localStorage se nikalo
+        const token = localStorage.getItem('token');
+        if (!token) {
             alert("Please log in to make a payment.");
             return;
         }
 
         try {
+            // Amount ko paise mein convert karo (e.g., 199 * 100 = 19900)
+            const amountInPaise = amountInRupees * 100;
+            
+            // 2. 'create-order' API call karo. Header daalne ki zaroorat nahi,
+            //    kyunki humara api.js waala interceptor yeh kaam apne aap kar dega.
             const { data: { id: order_id, currency } } = await api.post(
                 '/api/payment/create-order',
-                { amount, receipt: `receipt_assessment_${new Date().getTime()}` },
-                { headers: { Authorization: `Bearer ${idToken}` } }
+                { amount: amountInPaise, receipt: `receipt_assessment_${new Date().getTime()}` }
             );
 
             const options = {
-                key: "rzp_test_RPNPg6A7yl1KPA",
-                amount: amount * 100,
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Key ko .env file se lein
+                amount: amountInPaise,
                 currency: currency,
                 name: "Astro App Assessment",
                 description: "Paid Assessment Fee",
@@ -55,11 +60,8 @@ const AssignmentPage = () => {
                         razorpay_signature: response.razorpay_signature,
                     };
                     try {
-                        const verificationResponse = await api.post(
-                            '/api/payment/verify',
-                            data,
-                            { headers: { Authorization: `Bearer ${idToken}` } }
-                        );
+                        // 3. 'verify' API call karo. Yahaan bhi header ki zaroorat nahi.
+                        const verificationResponse = await api.post('/api/payment/verify', data);
                         alert(verificationResponse.data.message);
                         setPaidUnlocked(true); // Unlock on successful payment
                     } catch (error) {
@@ -68,8 +70,8 @@ const AssignmentPage = () => {
                     }
                 },
                 prefill: {
-                    name: "", // User will fill this on Razorpay popup
-                    email: "", // User will fill this on Razorpay popup
+                    name: "", // User will fill this
+                    email: "", // User will fill this
                 },
                 theme: {
                     color: "#f76822",
@@ -79,7 +81,12 @@ const AssignmentPage = () => {
             paymentObject.open();
         } catch (error) {
             console.error("Error creating Razorpay order:", error.response ? error.response.data : error.message);
-            alert("Could not initiate payment. Please try again.");
+            // Agar token galat hai to backend 401 error bhejega
+            if (error.response && error.response.status === 401) {
+                alert("Your session has expired. Please log in again.");
+            } else {
+                alert("Could not initiate payment. Please try again.");
+            }
         }
     };
     // --- END PAYMENT LOGIC ---
@@ -136,7 +143,6 @@ const AssignmentPage = () => {
                             <p className="text-gray-700 font-medium">
                                 Pay ₹199 to unlock the Paid Assessment.
                             </p>
-                            {/* THIS BUTTON IS NOW SIMPLIFIED */}
                             <button
                                 onClick={() => displayRazorpay(199)}
                                 className="px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700"
@@ -205,8 +211,6 @@ const AssignmentPage = () => {
                 </div>
             </main>
             
-            {/* Payment Modal has been removed */}
-
             <Footer />
         </div>
     );
