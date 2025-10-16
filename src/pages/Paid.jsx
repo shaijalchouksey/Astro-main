@@ -1,12 +1,9 @@
 import { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-// RESTORED: Using your actual Navbar and Footer components
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-// NEW: Import axios for API calls
 import api from '../api';
-// REMOVED: Firebase auth is no longer needed in this file for our dummy system
 
 const PaidTherapy = () => {
     const doctors = [
@@ -76,62 +73,44 @@ const PaidTherapy = () => {
         return day === 0 || unavailable;
     };
 
-    // UPDATED: This function now uses our dummy backend's JWT token from localStorage
-    const displayRazorpay = async (amount) => {
-        // 1. Get the JWT token from localStorage
-        const idToken = localStorage.getItem('authToken');
-
-        // UPDATED: Check for the JWT token instead of Firebase's auth.currentUser
-        if (!idToken) {
+    // --- PAYMENT GATEWAY LOGIC (UPDATED & CORRECTED) ---
+    const displayRazorpay = async (amountInRupees) => {
+        // 1. Token ko sahi naam ('token') se localStorage se nikalo
+        const token = localStorage.getItem('token');
+        if (!token) {
             alert("Please log in to make a payment.");
-            // You might want to redirect to the login page here
             return;
         }
 
         try {
-            // 2. Call our backend to create a Razorpay order
+            // Amount ko paise mein convert karo
+            const amountInPaise = amountInRupees * 100;
+            
+            // 2. 'create-order' API call karo. Header daalne ki zaroorat nahi,
+            //    kyunki humara api.js waala interceptor yeh kaam apne aap kar dega.
             const { data: { id: order_id, currency } } = await api.post(
                 '/api/payment/create-order',
-                {
-                    amount: amount,
-                    receipt: `receipt_booking_${new Date().getTime()}`
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${idToken}` // Use the JWT token
-                    }
-                }
+                { amount: amountInPaise, receipt: `receipt_booking_${new Date().getTime()}` }
             );
 
-            // 3. Set up Razorpay options
             const options = {
-                key: "rzp_test_RPNPg6A7yl1KPA", // IMPORTANT: This is your CLIENT-SIDE Key ID
-                amount: amount * 100,
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Key ko .env file se lein
+                amount: amountInPaise,
                 currency: currency,
                 name: "Astro App Booking",
                 description: `Booking for ${selectedDoctor.name}`,
                 order_id: order_id,
-                // 4. This function runs after payment is successful
                 handler: async function (response) {
                     const data = {
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_signature: response.razorpay_signature,
                     };
-
-                    // 5. Call our backend to verify the payment
                     try {
-                        const verificationResponse = await api.post(
-                            '/api/payment/verify',
-                            data,
-                            {
-                                headers: {
-                                    Authorization: `Bearer ${idToken}` // Use the JWT token again
-                                }
-                            }
-                        );
+                        // 3. 'verify' API call karo. Yahaan bhi header ki zaroorat nahi.
+                        const verificationResponse = await api.post('/api/payment/verify', data);
                         alert(verificationResponse.data.message);
-                        setShowForm(false);
+                        setShowForm(false); // Close the form on successful payment
                     } catch (error) {
                         console.error("Payment verification failed:", error);
                         alert("Payment verification failed. Please contact support.");
@@ -145,18 +124,19 @@ const PaidTherapy = () => {
                     color: "#f76822",
                 },
             };
-
-            // 6. Open the Razorpay payment window
             const paymentObject = new window.Razorpay(options);
             paymentObject.open();
         } catch (error) {
             console.error("Error creating Razorpay order:", error.response ? error.response.data : error.message);
-            alert("Could not initiate payment. Please make sure you are logged in correctly.");
+            if (error.response && error.response.status === 401) {
+                alert("Your session has expired. Please log in again.");
+            } else {
+                alert("Could not initiate payment. Please try again.");
+            }
         }
     };
 
 
-    // handleSubmit function is now correct
     const handleSubmit = (e) => {
         e.preventDefault();
         
