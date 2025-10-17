@@ -1,14 +1,58 @@
+import { CheckCircle, X } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from '../api';
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 
+// NAYA COMPONENT: Custom Popup Modal
+const PopupModal = ({ message, onClose }) => (
+    <AnimatePresence>
+        {message && (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+            >
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="bg-white text-black p-6 rounded-2xl w-full max-w-sm text-center shadow-xl relative"
+                >
+                    <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
+                        <X size={24} />
+                    </button>
+                    <div className="flex justify-center mb-4">
+                        <CheckCircle size={48} className="text-green-500" />
+                    </div>
+                    <h2 className="text-xl font-bold mb-2">Success</h2>
+                    <p className="text-gray-700">{message}</p>
+                    <button
+                        onClick={onClose}
+                        className="bg-orange-600 text-white px-6 py-2 rounded-full w-full mt-6 hover:bg-orange-700 transition"
+                    >
+                        OK
+                    </button>
+                </motion.div>
+            </motion.div>
+        )}
+    </AnimatePresence>
+);
+
+
 const AssignmentPage = () => {
     const [questionNumber, setQuestionNumber] = useState(1);
     const [totalQuestions] = useState(5);
-    const [assessmentType, setAssessmentType] = useState("free"); // "free" or "paid"
-    const [showResult, setShowResult] = useState(false);
-    const [paidUnlocked, setPaidUnlocked] = useState(false); // tracks payment
+    const [assessmentType, setAssessmentType] = useState("free");
+    const [paidUnlocked, setPaidUnlocked] = useState(false);
+    
+    const [answers, setAnswers] = useState(Array(totalQuestions).fill(""));
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // NAYA STATE: Popup message ke liye
+    const [popupMessage, setPopupMessage] = useState(null);
 
     const freeQuestions = [
         "Describe a skill you want to improve in the next 6 months and why.",
@@ -26,29 +70,29 @@ const AssignmentPage = () => {
         "Write about a mentor who influenced your personal development."
     ];
 
-    // --- PAYMENT GATEWAY LOGIC (UPDATED & CORRECTED) ---
-    const displayRazorpay = async (amountInRupees) => {
-        // 1. Token ko sahi naam ('token') se localStorage se nikalo
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert("Please log in to make a payment.");
+    const handleAnswerChange = (e) => {
+        const newAnswers = [...answers];
+        newAnswers[questionNumber - 1] = e.target.value;
+        setAnswers(newAnswers);
+    };
+
+    const displayRazorpay = async (amount) => {
+        const idToken = localStorage.getItem('authToken');
+        if (!idToken) {
+            setPopupMessage("Please log in to make a payment.");
             return;
         }
 
         try {
-            // Amount ko paise mein convert karo (e.g., 199 * 100 = 19900)
-            const amountInPaise = amountInRupees * 100;
-            
-            // 2. 'create-order' API call karo. Header daalne ki zaroorat nahi,
-            //    kyunki humara api.js waala interceptor yeh kaam apne aap kar dega.
             const { data: { id: order_id, currency } } = await api.post(
                 '/api/payment/create-order',
-                { amount: amountInPaise, receipt: `receipt_assessment_${new Date().getTime()}` }
+                { amount, receipt: `receipt_assessment_${new Date().getTime()}` },
+                { headers: { Authorization: `Bearer ${idToken}` } }
             );
 
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Key ko .env file se lein
-                amount: amountInPaise,
+                key: "rzp_test_RPNPg6A7yl1KPA",
+                amount: amount * 100,
                 currency: currency,
                 name: "Astro App Assessment",
                 description: "Paid Assessment Fee",
@@ -60,157 +104,145 @@ const AssignmentPage = () => {
                         razorpay_signature: response.razorpay_signature,
                     };
                     try {
-                        // 3. 'verify' API call karo. Yahaan bhi header ki zaroorat nahi.
-                        const verificationResponse = await api.post('/api/payment/verify', data);
-                        alert(verificationResponse.data.message);
-                        setPaidUnlocked(true); // Unlock on successful payment
+                        await api.post(
+                            '/api/payment/verify',
+                            data,
+                            { headers: { Authorization: `Bearer ${idToken}` } }
+                        );
+                        setPopupMessage("Payment successful! The assessment is now unlocked.");
+                        setPaidUnlocked(true);
                     } catch (error) {
                         console.error("Payment verification failed:", error);
-                        alert("Payment verification failed. Please contact support.");
+                        setPopupMessage("Payment verification failed. Please contact support.");
                     }
                 },
-                prefill: {
-                    name: "", // User will fill this
-                    email: "", // User will fill this
-                },
-                theme: {
-                    color: "#f76822",
-                },
+                prefill: { name: "", email: "" },
+                theme: { color: "#f76822" },
             };
             const paymentObject = new window.Razorpay(options);
             paymentObject.open();
         } catch (error) {
             console.error("Error creating Razorpay order:", error.response ? error.response.data : error.message);
-            // Agar token galat hai to backend 401 error bhejega
-            if (error.response && error.response.status === 401) {
-                alert("Your session has expired. Please log in again.");
-            } else {
-                alert("Could not initiate payment. Please try again.");
-            }
+            setPopupMessage("Could not initiate payment. Please try again.");
         }
     };
-    // --- END PAYMENT LOGIC ---
 
-    const currentQuestion =
-        assessmentType === "free"
-            ? freeQuestions[questionNumber - 1]
-            : paidQuestions[questionNumber - 1];
+    const handleSubmitAssignment = async () => {
+        setIsSubmitting(true);
+        try {
+            const idToken = localStorage.getItem('authToken');
+            if (!idToken) {
+                setPopupMessage("Please log in before submitting the assignment.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            const questions = assessmentType === 'free' ? freeQuestions : paidQuestions;
+            const submissionData = answers.map((answer, index) => ({
+                question: questions[index],
+                answer: answer
+            }));
+
+            await api.post('/api/assignments/submit', {
+                assessmentType: assessmentType,
+                answers: submissionData
+            }, {
+                headers: { Authorization: `Bearer ${idToken}` }
+            });
+
+            setPopupMessage("Your assignment has been submitted successfully!");
+            setQuestionNumber(1);
+            setAnswers(Array(totalQuestions).fill(""));
+
+        } catch (error) {
+            console.error("Assignment submission failed:", error);
+            setPopupMessage("Submission failed. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const currentQuestion = assessmentType === "free" ? freeQuestions[questionNumber - 1] : paidQuestions[questionNumber - 1];
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#6b2400] via-[#f76822] to-[#f76822]">
             <Navbar />
             <div className="pt-24"></div>
 
+            {/* POPUP MODAL KO RENDER KAREIN */}
+            <PopupModal message={popupMessage} onClose={() => setPopupMessage(null)} />
+
             <div className="flex justify-center gap-4 mt-4">
                 <button
-                    onClick={() => {
-                        setAssessmentType("free");
-                        setQuestionNumber(1);
-                        setPaidUnlocked(false);
-                    }}
-                    className={`px-6 py-2 rounded-lg font-medium ${
-                        assessmentType === "free"
-                            ? "bg-orange-600 text-white"
-                            : "bg-white text-black"
-                    }`}
+                    onClick={() => { setAssessmentType("free"); setQuestionNumber(1); setAnswers(Array(totalQuestions).fill("")); setPaidUnlocked(false); }}
+                    className={`px-6 py-2 rounded-lg font-medium ${assessmentType === "free" ? "bg-orange-600 text-white" : "bg-white text-black"}`}
                 >
                     Free Assessment
                 </button>
                 <button
-                    onClick={() => {
-                        setAssessmentType("paid");
-                        setQuestionNumber(1);
-                        setPaidUnlocked(false);
-                    }}
-                    className={`px-6 py-2 rounded-lg font-medium ${
-                        assessmentType === "paid"
-                            ? "bg-orange-600 text-white"
-                            : "bg-white text-black"
-                    }`}
+                    onClick={() => { setAssessmentType("paid"); setQuestionNumber(1); setAnswers(Array(totalQuestions).fill("")); setPaidUnlocked(false); }}
+                    className={`px-6 py-2 rounded-lg font-medium ${assessmentType === "paid" ? "bg-orange-600 text-white" : "bg-white text-black"}`}
                 >
                     Paid Assessment
                 </button>
             </div>
 
             <main className="flex-grow flex items-center justify-center px-4 py-6">
-                <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 md:p-10">
-                    <p className="text-blue-700 font-medium mb-4">
+                <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 md:p-10 text-black">
+                    <p className="text-orange-600 font-medium mb-4">
                         Question: {questionNumber}/{totalQuestions}
                     </p>
 
                     {assessmentType === "paid" && !paidUnlocked ? (
                         <div className="flex flex-col items-center gap-4 mt-6">
-                            <p className="text-gray-700 font-medium">
-                                Pay ₹199 to unlock the Paid Assessment.
-                            </p>
-                            <button
-                                onClick={() => displayRazorpay(199)}
-                                className="px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700"
-                            >
+                            <p className="text-gray-700 font-medium">Pay ₹199 to unlock the Paid Assessment.</p>
+                            <button onClick={() => displayRazorpay(199)} className="px-6 py-3 bg-orange-600 text-white rounded-lg font-medium">
                                 Pay ₹199
                             </button>
                         </div>
                     ) : (
                         <div>
-                            <h2 className="text-lg md:text-xl font-semibold mb-6">
-                                {assessmentType === "free" ? "Free Assessment" : "Paid Assessment"}
-                            </h2>
+                            <h2 className="text-lg md:text-xl font-semibold mb-6">{assessmentType === "free" ? "Free Assessment" : "Paid Assessment"}</h2>
                             <p className="font-medium text-gray-800 mb-4">{currentQuestion}</p>
                             <textarea
                                 placeholder="Type your answer here..."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                                 rows={6}
+                                value={answers[questionNumber - 1]}
+                                onChange={handleAnswerChange}
                             />
-                            <div className="mt-6">
-                                <button
-                                    onClick={() => setShowResult(!showResult)}
-                                    className="text-blue-600 font-medium"
-                                >
-                                    See Result {showResult ? "▲" : "▼"}
-                                </button>
-                                {showResult && (
-                                    <div className="mt-3 p-4 bg-gray-100 rounded-lg text-gray-700">
-                                        Results will be shown here after submission.
-                                    </div>
-                                )}
-                            </div>
+                            
                             <div className="mt-8 flex justify-between">
                                 <button
                                     onClick={() => setQuestionNumber((prev) => Math.max(1, prev - 1))}
                                     disabled={questionNumber === 1}
-                                    className={`px-6 py-3 rounded-md font-medium ${
-                                        questionNumber === 1
-                                            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                                            : "bg-black text-white hover:bg-gray-800"
-                                    }`}
+                                    className="px-6 py-3 rounded-md font-medium bg-black text-white disabled:bg-gray-400"
                                 >
                                     Previous
                                 </button>
-                                <button
-                                    onClick={() =>
-                                        setQuestionNumber((prev) => Math.min(totalQuestions, prev + 1))
-                                    }
-                                    disabled={questionNumber === totalQuestions}
-                                    className={`px-6 py-3 rounded-md font-medium ${
-                                        questionNumber === totalQuestions
-                                            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                                            : "bg-orange-600 text-white hover:bg-orange-700"
-                                    }`}
-                                >
-                                    Next
-                                </button>
-                            </div>
-                            <div className="mt-10 text-center italic text-purple-700 font-medium">
-                                “I am grateful for the service provided by Dr. Ruchi Goyal. She helped me in leading a happy life!”
-                            </div>
-                            <div className="mt-2 text-center italic text-yellow-700 font-medium">
-                                - Review by a Delighted Customer
+
+                                {questionNumber < totalQuestions ? (
+                                    <button
+                                        onClick={() => setQuestionNumber((prev) => Math.min(totalQuestions, prev + 1))}
+                                        className="px-6 py-3 rounded-md font-medium bg-orange-600 text-white"
+                                    >
+                                        Next
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleSubmitAssignment}
+                                        disabled={isSubmitting}
+                                        className="px-6 py-3 rounded-md font-medium bg-green-600 text-white disabled:bg-gray-400"
+                                    >
+                                        {isSubmitting ? 'Submitting...' : 'Submit Assignment'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
                 </div>
             </main>
-            
+
             <Footer />
         </div>
     );
