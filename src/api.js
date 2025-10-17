@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Vercel se URL uthayega, agar nahi mila to development ke liye localhost use karega
+// Vercel/Netlify se URL uthayega, agar nahi mila to development ke liye localhost use karega
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const api = axios.create({
@@ -14,8 +14,8 @@ const api = axios.create({
 // Yeh function har API request bhejne se *theek pehle* chalega.
 api.interceptors.request.use(
   (config) => {
-    // 1. localStorage se token ko nikalo
-    const token = localStorage.getItem('token');
+    // 1. localStorage se token ko sahi naam ('authToken') se nikalo
+    const token = localStorage.getItem('authToken');
     
     // 2. Agar token maujood hai
     if (token) {
@@ -33,3 +33,4 @@ api.interceptors.request.use(
 );
 
 export default api;
+
