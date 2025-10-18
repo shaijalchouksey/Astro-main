@@ -36,7 +36,7 @@ const CompatibilitySection = () => {
     alert("Compatibility Analysis Requested!");
   };
   const buttonStyle =
-    "px-8 py-3 rounded-2xl font-semibold shadow-lg hover:scale-105 transition-all"; 
+    "bg-black text-white font-semibold px-3 py-3 rounded-full shadow-lg hover:bg-orange-100 transition duration-300"; 
 
   return (
     
@@ -139,7 +139,7 @@ const CompatibilitySection = () => {
           <button
             type="submit"
             onClick={handleSubmit}
-            className={`${buttonStyle} bg-[#000000] mt-6 lg:mr-[160vh] inline-block`}
+            className={`${buttonStyle} mt-6 lg:mr-[160vh] inline-block`}
           >
             Check Compatibility →
           </button>
