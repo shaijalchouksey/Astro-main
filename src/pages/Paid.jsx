@@ -137,50 +137,56 @@ const PaidTherapy = () => {
             </section>
             {/* Doctor Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 mt-4 lg:grid-cols-3 gap-6 px-4 pb-8">
-                {doctors.map((doctor, index) => (
-                    <div key={doctor.id} className="bg-gradient-to-br from-[#f76822] via-orange-550/100 to-orange-500/70 rounded-xl p-4 relative  border-white">
-                        <div className="flex justify-between">
-                            <div>
-                                <h2 className="text-xl font-semibold">{doctor.name}</h2>
-                                <p className="mt-2 text-sm">{doctor.fee}</p>
-                                <p className="text-sm mt-1">Qualifications: {doctor.qualifications}</p>
-                                <p className="text-sm mt-1">Experience: {doctor.experience}</p>
-                                <p className="text-sm mt-1">{doctor.languages}</p>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {doctor.expertise.map((area, i) => (
-                                        <span
-                                            key={i}
-                                            className="bg-white/30 text-white text-xs px-3 py-1 rounded-full"
-                                        >
-                                            {area}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <div className="bg-white text-black rounded-full px-3 py-1 text-sm flex items-center gap-1 font-semibold">
-                                    ⭐ {doctor.rating}
-                                </div>
-                            </div>
-                        </div>
+  {doctors.map((doctor, index) => (
+    <div
+      key={doctor.id}
+      className="bg-gradient-to-br from-[#0d9488] via-[#14b8a6] to-[#2dd4bf] rounded-xl p-4 relative border-white shadow-md"
+    >
+      <div className="flex justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-white">{doctor.name}</h2>
+          <p className="bg-white/10 text-teal-900 w-[20vh] rounded-full p-1 text-md font-bold">{doctor.fee}</p>
+          <p className="text-sm mt-1 text-white/90">
+            Qualifications: {doctor.qualifications}
+          </p>
+          <p className="text-sm mt-1 text-white/90">
+            Experience: {doctor.experience}
+          </p>
+          <p className="text-sm mt-1 text-white/90">{doctor.languages}</p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {doctor.expertise.map((area, i) => (
+              <span
+                key={i}
+                className="bg-white/30 text-white text-xs px-3 py-1 rounded-full"
+              >
+                {area}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="text-yellow-400 mb-[25vh] font-bold text-md flex items-center">
+          ⭐ {doctor.rating}
+        </div>  
+      </div>
 
-                        <div className="flex items-center justify-between mt-4">
-                            <button
-                                onClick={() => handleCheckCalendar(doctor)}
-                                className="bg-white text-black rounded-full px-4 py-1 text-sm font-semibold"
-                            >
-                                Calendar
-                            </button>
-                            <button
-                                onClick={() => handleCheckCalendar(doctor)}
-                                className="bg-[#0057ff] text-white rounded-full px-4 py-1 text-sm font-semibold"
-                            >
-                                Book Appointment
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+      <div className="flex items-center justify-between mt-4">
+        <button
+          onClick={() => handleCheckCalendar(doctor)}
+          className="bg-white text-teal-700 rounded-full px-4 py-1 text-sm font-semibold shadow hover:bg-teal-50 transition"
+        >
+          Calendar
+        </button>
+        <button
+          onClick={() => handleCheckCalendar(doctor)}
+          className="bg-teal-700 text-white rounded-full px-4 py-1 text-sm font-semibold shadow hover:bg-teal-800 transition"
+        >
+          Book Appointment
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
 
             {/* Calendar Modal */}
             {showCalendar && selectedDoctor && (
