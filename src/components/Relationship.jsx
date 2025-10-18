@@ -56,7 +56,7 @@ const CompatibilitySection = () => {
         >
           {/* Male Section */}
           <div className="bg-white/10 rounded-xl p-6 border border-orange-400/30 shadow-lg">
-            <h3 className="text-xl font-semibold text-orange-200 mb-4">
+            <h3 className="text-xl font-semibold text-white mb-4">
               Male Details
             </h3>
             <div className="space-y-4">
@@ -96,7 +96,7 @@ const CompatibilitySection = () => {
 
           {/* Female Section */}
           <div className="bg-white/10 rounded-xl p-6 border border-orange-400/30 shadow-lg">
-            <h3 className="text-xl font-semibold text-orange-200 mb-4">
+            <h3 className="text-xl font-semibold text-white mb-4">
               Female Details
             </h3>
             <div className="space-y-4">
