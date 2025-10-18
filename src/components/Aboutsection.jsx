@@ -24,8 +24,9 @@ const About = () => {
               services by the RCI certified Psychologists.
             </p>
 
+
             <p className="text-gray-200 mb-4 leading-relaxed">
-              With Steer-U, you can{" "}
+              With Steer-U, you can {" "}
               <span className="font-semibold text-orange-200">
                 Steer Your Happiness
               </span>{" "}
@@ -33,6 +34,7 @@ const About = () => {
               questions about your future life and the Free Therapy tips plus
               the paid services).
             </p>
+
 
             <p className="text-gray-200 leading-relaxed">
               Save on your valuable time and energy without speaking to any
@@ -44,21 +46,17 @@ const About = () => {
             </p>
           </div>
 
-          {/* Rotating wheel + static text */}
-          <div className="flex justify-center md:justify-end relative">
-            {/* Wheel animation */}
-            <img
-              src="./wheel.png"
-              alt="Wheel"
-              className="h-[40vh] w-auto animate-spin-slow"
-            />
 
-            {/* Static text overlay */}
-            <img
-              src="./text.png"
-              alt="Logo Text"
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%]"
-            />
+          {/* Replace wheel and text with a single video */}
+          <div className="flex justify-center md:justify-end relative">
+            <video
+              src="./Logo Animation 2.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="h-[40vh] w-auto object-contain rounded-xl shadow-lg"
+            ></video>
           </div>
         </div>
       </div>
