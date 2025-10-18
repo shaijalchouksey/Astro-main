@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 import ReferralButton from "../components/ReferalButton";
 import "../index.css";
 
-// Custom Popup Modal Component
+// CUSTOM POPUP MODAL COMPONENT
 const PopupModal = ({ message, onClose, isError = false }) => (
     <AnimatePresence>
         {message && (
@@ -32,10 +32,8 @@ const QuestionAnswerPage = () => {
     const [unlockedQuestions, setUnlockedQuestions] = useState([]);
     const [showPayment, setShowPayment] = useState(null);
     const [userData, setUserData] = useState({ name: "", email: "", gender: "male", dob: "", timeOfBirth: "", placeOfBirth: "" });
-
     const [answers, setAnswers] = useState({});
     const [isLoadingAnswer, setIsLoadingAnswer] = useState(null);
-    
     const [popupMessage, setPopupMessage] = useState(null);
     const [isErrorPopup, setIsErrorPopup] = useState(false);
 
@@ -47,10 +45,15 @@ const QuestionAnswerPage = () => {
         setUserData({ ...userData, [name]: value });
     };
 
+    // AAPKI POORI, COMPLETE QUESTIONS KI LIST
     const questions = {
         free: [],
-        "99rs": [ { text: "Predict career avenues for me.", price: 99 }, { text: "Which career avenues should I avoid?", price: 99 }, { text: "When can I start my own business if I make an effort?", price: 99 }, { text: "Will a government job suit me more than a private job?", price: 99 }, { text: "When can my earnings double if I make an effort?", price: 99 }, { text: "Predict my health during the next ten years.", price: 99 }, { text: "When can I quit smoking if I make an effort?", price: 99 }, { text: "When can I quit alcohol if I make an effort?", price: 99 }, { text: "When is a suitable window / right time for my surgery?", price: 99 }, { text: "When can my marital life situation change if I make an effort ? (answer it with my birth details only)", price: 99 }, ],
-        "199rs": [ { text: "Predict the profile of my likely spouse.", price: 199 }, { text: "Provide me with all my job promotion windows in the next ten years if I make an effort?", price: 199 }, { text: "When is the strongest possibility of the change of city within the next ten years if I make an effort?", price: 199 }, { text: "Suggest root cause & remedies for the negativity in my professional life?", price: 199 }, { text: "Which probable countries can I try to settle down if I make an effort?", price: 199 }, ],
+        "99rs": [
+            { text: "Predict career avenues for me.", price: 99 }, { text: "Which career avenues should I avoid?", price: 99 }, { text: "When can I start my own business if I make an effort?", price: 99 }, { text: "Will a government job suit me more than a private job?", price: 99 }, { text: "When can my earnings double if I make an effort?", price: 99 }, { text: "Predict my health during the next ten years.", price: 99 }, { text: "When can I quit smoking if I make an effort?", price: 99 }, { text: "When can I quit alcohol if I make an effort?", price: 99 }, { text: "When is a suitable window / right time for my surgery?", price: 99 }, { text: "When can my marital life situation change if I make an effort ? (answer it with my birth details only)", price: 99 }, { text: "When can I buy my next apartment if I make an effort?", price: 99 }, { text: "When can I buy my next house (landed property) if I make an effort?", price: 99 }, { text: "When am I likely to sell my apartment if I make an effort?", price: 99 }, { text: "When am I likely to sell my house (landed property) if I make an effort?", price: 99 }, { text: "When will my children get married if we make an effort? (answer it with my birth details)", price: 99 }, { text: "Will my children settle abroad if they make an effort? (answer it with my birth details)", price: 99 }, { text: "Suggest root cause & remedies for my negative emotions / depression?", price: 99 }, { text: "Suggest root cause & remedies for the negativity in my family environment? (answer it with my birth details)", price: 99 }, { text: "Which mantras should I chant daily or weekly according to my chart during this one year?", price: 99 }, { text: "When can I get my next promotion within the next five years if I make an effort?", price: 99 }, { text: "When is the strongest possibility of the change of city within the next five years if I make an effort?", price: 99 }, { text: "When am I likely to get my next job within the next five years if I make an effort?", price: 99 }, { text: "Which aspects of life including hobbies should I focus on, to enhance my happiness level?", price: 99 },
+        ],
+        "199rs": [
+            { text: "Predict the profile of my likely spouse.", price: 199 }, { text: "Provide me with all my job promotion windows in the next ten years if I make an effort?", price: 199 }, { text: "When is the strongest possibility of the change of city within the next ten years if I make an effort?", price: 199 }, { text: "Suggest root cause & remedies for the negativity in my professional life?", price: 199 }, { text: "Which probable countries can I try to settle down if I make an effort?", price: 199 }, { text: "What will be the right profession for me with decent earning potential?", price: 199 }, { text: "Probable percentage of marks in my next exam this year.", price: 199 }, { text: "When can I (lady) be blessed with a baby?", price: 199 }, { text: "What type of struggles are likely in my future life ? Suggest remedies.", price: 199 }, { text: "Suggest root cause & remedies for my mental peace.", price: 199 }, { text: "What type of health issues am I likely to encounter in the next ten years? Suggest remedies.", price: 199 }, { text: "Suggest root cause & remedies for my obesity.", price: 199 }, { text: "Give me mahurat dates for my marriage within a two years timeframe.", price: 199 }, { text: "Give me future timelines for my career & marriage during the next ten years?", price: 199 }, { text: "What are the chances of success in the matter of court case for me if I make an effort?", price: 199 }, { text: "Should I become a trader/investor professionally?", price: 199 }, { text: "When is the strongest possibility of the change of cities within the next twenty years if I make an effort?", price: 199 }, { text: "Which financial assets should I focus on, as per my horoscope?", price: 199 }, { text: "When will I be more successful and happy in every field of my life?", price: 199 }, { text: "When will my business get better and more productive?", price: 199 }, { text: "Advise periods when I should be cautious of any emotional turmoil in my life?", price: 199 }, { text: "When will I achieve a stress free life for myself?", price: 199 }, { text: "Predict my spiritual life.", price: 199 }, { text: "Advise which god I should worship?", price: 199 }, { text: "When will I be able to reduce stress in my life?", price: 199 }, { text: "When can I switch from my job to my own business?", price: 199 }, { text: "Advise possible risks in my life where I need to take any specific precautions?", price: 199 }, { text: "When will my spouse be more understanding towards me for a better family environment?", price: 199 }, { text: "How many children can I have?", price: 199 }, { text: "When will I be able to start supporting my parents & family financially?", price: 199 },
+        ],
     };
 
     const displayRazorpay = async (amount) => {
@@ -85,13 +88,12 @@ const QuestionAnswerPage = () => {
     const handlePayment = () => { if (showPayment) { displayRazorpay(showPayment.price); } };
     const toggleQuestion = (index) => { if (openQuestions.includes(index)) { setOpenQuestions(openQuestions.filter((i) => i !== index)); } else { setOpenQuestions([...openQuestions, index]); } };
     
-    // VALIDATION UPDATE KI GAYI HAI
     const handleSubmitDetails = () => {
-        if (!userData.name || !userData.email || !userData.dob || !userData.timeOfBirth || !userData.placeOfBirth) {
-            showErrorPopup("Please fill in all your details before saving.");
+        if (!userData.dob || !userData.timeOfBirth || !userData.placeOfBirth) {
+            showErrorPopup("Please fill in your Date of Birth, Time, and Place of Birth before saving.");
             return;
         }
-        showSuccessPopup("Your details have been saved successfully!");
+        showSuccessPopup("Your birth details have been saved successfully!");
     };
 
     const fetchPrediction = async (tab, index, questionText) => {
@@ -134,13 +136,10 @@ const QuestionAnswerPage = () => {
             </section>
 
             <div className="max-w-3xl mx-auto bg-orange-500/80 rounded-xl shadow-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold mb-4 text-white text-center"> Enter Your Details </h2>
-                {/* FORM UPDATE KIYA GAYA HAI */}
+                <h2 className="text-2xl font-bold mb-4 text-white text-center"> Enter Your Birth Details </h2>
                 <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" name="name" placeholder="Name / Pseudo Name *" className="p-2 rounded text-black" value={userData.name} onChange={handleInputChange} />
-                    <input type="email" name="email" placeholder="Email (for payment receipt) *" className="p-2 rounded text-black" value={userData.email} onChange={handleInputChange} />
-                    <input type="date" name="dob" placeholder="Date of Birth" className="p-2 rounded text-black" value={userData.dob} onChange={handleInputChange} />
-                    <input type="time" name="timeOfBirth" placeholder="Time of Birth" className="p-2 rounded text-black" value={userData.timeOfBirth} onChange={handleInputChange} />
+                    <input type="date" name="dob" placeholder="Date of Birth *" className="p-2 rounded text-black" value={userData.dob} onChange={handleInputChange} />
+                    <input type="time" name="timeOfBirth" placeholder="Time of Birth *" className="p-2 rounded text-black" value={userData.timeOfBirth} onChange={handleInputChange} />
                     <select name="gender" className="p-2 rounded text-black" value={userData.gender} onChange={handleInputChange} >
                         <option value="male">Male</option>
                         <option value="female">Female</option>
