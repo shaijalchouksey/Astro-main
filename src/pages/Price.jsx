@@ -7,14 +7,13 @@ import Navbar from "../components/Navbar";
 import api from '../api';
 
 const plans = [
-    { price: 1200, oldPrice: 1500, title: "Per Session", description: "RCI Registered Psychotherapist (2–3 years experience)", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "RCI Registered Psychotherapist (2–3 years experience)"] },
-    { price: 1500, oldPrice: 2000, title: "Per Session", description: "RCI Registered Psychotherapist (4–6 years experience)", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "RCI Registered Psychotherapist (4–6 years experience)"] },
-    { price: 2000, oldPrice: 2800, title: "Per Session", description: "RCI Registered Psychotherapist (7–10 years experience)", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "RCI Registered Psychotherapist (7–10 years experience)"] },
+    { price: 1200, oldPrice: 1500, title: "Per Session", description: "RCI Registered Psychotherapist (2–3 years experience)", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "2–3 years experience (RCI Registered Psychotherapist)"] },
+    { price: 1500, oldPrice: 2000, title: "Per Session", description: "RCI Registered Psychotherapist (4–6 years experience)", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "4–6 years experience (RCI Registered Psychotherapist)"] },
+    { price: 2000, oldPrice: 2800, title: "Per Session", description: "RCI Registered Psychotherapist (7–10 years experience)", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "7–10 years experience (RCI Registered Psychotherapist)"] },
     { price: 8100, pack: "6 sessions pack", discount: "10% Discount", description: "6 sessions pack with 10% discount", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "Validity – 3 Months"] },
     { price: 12750, pack: "10 sessions pack", discount: "15% Discount", description: "10 sessions pack with 15% discount", details: ["Each session is 30 minutes", "Cancellation shall be charged at 50%", "Validity – 6 Months"] },
 ];
 
-// NAYA COMPONENT: Custom Popup Modal
 const PopupModal = ({ message, onClose, isError = false }) => (
     <AnimatePresence>
         {message && (
@@ -34,7 +33,6 @@ const PopupModal = ({ message, onClose, isError = false }) => (
 );
 
 const PricingPage = () => {
-    // NAYE STATES: Popup ke liye
     const [popupMessage, setPopupMessage] = useState(null);
     const [isErrorPopup, setIsErrorPopup] = useState(false);
 
@@ -42,7 +40,6 @@ const PricingPage = () => {
     const showSuccessPopup = (message) => { setIsErrorPopup(false); setPopupMessage(message); };
 
     const displayRazorpay = async (plan) => {
-        // Token ko sahi naam 'authToken' se check karein
         if (!localStorage.getItem('authToken')) {
             showErrorPopup("Please log in to make a payment.");
             return;
@@ -72,16 +69,14 @@ const PricingPage = () => {
                         razorpay_signature: response.razorpay_signature,
                     };
                     try {
-                        // 1. Payment ko verify karein
                         await api.post('/api/payment/verify', paymentDetails);
 
-                        // 2. Payment verify hone ke baad, khareede gaye plan ko Firebase mein save karein
                         const bookingData = {
-                            doctor: plan.description, // Hum description ko as a plan title use kar rahe hain
-                            date: new Date().toDateString(), // Aaj ki date
-                            slot: 'N/A', // Plan purchase mein specific slot nahi hota
+                            doctor: plan.description,
+                            date: new Date().toDateString(),
+                            slot: 'N/A',
                             paymentId: paymentDetails.razorpay_payment_id,
-                            planDetails: plan // Poora plan object save kar lein
+                            planDetails: plan
                         };
                         await api.post('/api/bookings/create', { bookingDetails: bookingData });
 
