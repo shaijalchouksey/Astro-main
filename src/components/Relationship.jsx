@@ -36,7 +36,7 @@ const CompatibilitySection = () => {
     alert("Compatibility Analysis Requested!");
   };
   const buttonStyle =
-    "px-4 py-3 rounded-2xl font-semibold shadow-lg hover:scale-105 transition-all"; 
+    "px-3 py-3 rounded-2xl font-semibold shadow-lg hover:scale-105 transition-all"; 
 
   return (
     
