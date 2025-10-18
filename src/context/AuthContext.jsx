@@ -9,7 +9,8 @@ export const AuthProvider = ({ children }) => {
 
   // Jab app pehli baar load ho, to localStorage check karein
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    // Sahi naam 'authToken' se token ko dhoondhein
+    const token = localStorage.getItem('authToken');
     if (token) {
       setAuthToken(token);
     }
@@ -17,13 +18,15 @@ export const AuthProvider = ({ children }) => {
 
   // Login hone par token set karne ka function
   const login = (token) => {
-    localStorage.setItem('token', token);
+    // Sahi naam 'authToken' se token ko save karein
+    localStorage.setItem('authToken', token);
     setAuthToken(token);
   };
 
   // Logout hone par token remove karne ka function
   const logout = () => {
-    localStorage.removeItem('token');
+    // Sahi naam 'authToken' se token ko remove karein
+    localStorage.removeItem('authToken');
     setAuthToken(null);
   };
 
@@ -36,3 +39,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
