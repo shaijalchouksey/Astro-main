@@ -100,17 +100,35 @@ const Home = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#6b2400] via-[#f76822] to-[#f76822] text-white">
       <Navbar />
 
-      {/* Hero Section */}
-      <ScrollSection className="flex flex-col mb-[-20vh] items-center justify-center text-center py-32 px-4">
+      <ScrollSection className="relative flex flex-col mb-[-20vh] items-center justify-center text-center py-32 px-4">
+        {/* Top corner buttons */}
+        <div className="absolute top-[20vh] left-8">
+          <Link
+            to="/Question"
+            className={`${buttonStyle} bg-[#000000] text-white/95`}
+          >
+            Predict Your Future
+          </Link>
+        </div>
+        <div className="absolute top-[20vh] right-8">
+          <Link
+            to="/paid"
+            className={`${buttonStyle} bg-white text-dark`}
+          >
+            Get Therapy
+          </Link>
+        </div>
+
+        {/* Main content */}
         <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
           Welcome to{" "}
           <span className="text-[#FFD700] font-bold italic">Steer-U</span>
         </h1>
         <p className="text-gray-200 text-lg md:text-xl mb-8 max-w-3xl drop-shadow">
-          Integrating future predictions with psychological counselling for a holistic
-          experience globally. Get personalized insights and guidance tailored for you.
+          Integrating future predictions with psychological counselling. Get personalized insights and guidance tailored for you.
         </p>
-        {/* Rotating key points instead of buttons */}
+
+        {/* Rotating key points */}
         <AnimatePresence mode="wait">
           <motion.p
             key={currentIndex}
@@ -123,25 +141,13 @@ const Home = () => {
             {messages[currentIndex]}
           </motion.p>
         </AnimatePresence>
-        <div className="flex flex-wrap justify-center gap-4 mt-8">
-          <Link
-            to="/future-prediction"
-            className={`${buttonStyle} bg-[#000000] text-white/95`}
-          >
-            Predict Your Future
-          </Link>
-          <Link
-            to="/paid-therapy"
-            className={`${buttonStyle} bg-white text-dark`}
-          >
-            Get Therapy
-          </Link>
-        </div>
       </ScrollSection>
+      <Aboutsection />
+
       {/*  Future prediction questions */}
-      <ScrollSection className="py-20 px-6 mt-[-5vh] mb-[-10vh] md:px-16">
+      <ScrollSection className="py-20 px-6 mt-[-10vh] mb-[-10vh] md:px-16">
         <div className={cardStyle}>
-          <h2 className="text-3xl font-fancy font-bold mb-4 text-orange-300 drop-shadow-md">
+          <h2 className="text-4xl font-fancy font-bold mb-4 text-orange-300 drop-shadow-md">
             Future prediction questions
           </h2>
           <p className="text-gray-200 mb-6">
@@ -243,7 +249,6 @@ const Home = () => {
           </Link>
         </div>
       </ScrollSection>
-      <Aboutsection />
       {/* Start Journey */}
       <ScrollSection className="py-20 px-6 md:px-16 mt-[-12vh] mb-[-20vh] text-center my-10">
         <div className={cardStyle}>
@@ -320,7 +325,9 @@ const Home = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 50 }}
             transition={{ duration: 0.8 }}
-            className="fixed bottom-10 right-10 bg-gradient-to-b from-[#6b2400] via-[#f76822] to-[#f76822] backdrop-blur-md text-white p-4 rounded-xl shadow-lg z-50 max-w-xs"
+            className="fixed bottom-10 right-10 bg-gradient-to-b from-[#3b1d0b] to-[#1e1e1e] backdrop-blur-md text-white p-2 rounded-xl shadow-lg z-50 max-w-xs"
+
+
           >
             {quote}
           </motion.div>
