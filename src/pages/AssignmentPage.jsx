@@ -5,7 +5,6 @@ import api from '../api';
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 
-// NAYA COMPONENT: Custom Popup Modal
 const PopupModal = ({ message, onClose }) => (
     <AnimatePresence>
         {message && (
@@ -169,7 +168,7 @@ const AssignmentPage = () => {
             <Navbar />
             <div className="pt-24"></div>
 
-            {/* POPUP MODAL KO RENDER KAREIN */}
+            {/* POPUP MODAL */}
             <PopupModal message={popupMessage} onClose={() => setPopupMessage(null)} />
 
             <div className="flex justify-center gap-4 mt-4">
