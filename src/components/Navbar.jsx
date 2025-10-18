@@ -11,9 +11,9 @@ const Navbar = () => {
 
   const pages = [
     { name: "Home", path: "/" },
+    { name: "future prediction", path: "/Question" },
     { name: "Paid Therapy", path: "/paid" },
     { name: "Free counselling", path: "/counselling" },
-    { name: "future prediction", path: "/Question" },
     { name: "Psychological assessments", path: "/assignment" },
     { name: "Pricing", path: "/pricing" },
   ];
