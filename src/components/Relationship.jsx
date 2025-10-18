@@ -35,20 +35,21 @@ const CompatibilitySection = () => {
     console.log("Female Data:", femaleData);
     alert("Compatibility Analysis Requested!");
   };
+  const buttonStyle =
+    "px-6 py-3 rounded-2xl font-semibold shadow-lg hover:scale-105 transition-all"; 
 
   return (
+    
     <section className="py-20 px-6 md:px-16 mt-[-3vh]">
       <div className={cardStyle}>
-        <h2 className="text-3xl md:text-4xl font-fancy font-bold mb-8 text-orange-200 drop-shadow-md text-center">
+        <h2 className="text-4xl font-fancy font-bold mb-4 text-orange-300 drop-shadow-md">
           Relationship Compatibility
         </h2>
-
-        <p className="text-gray-100 text-center max-w-2xl mx-auto mb-10 leading-relaxed">
+        <p className="text-gray-200 mb-6">
           Discover your relationship harmony based on birth details. Enter both
           male and female information to calculate your compatibility using
           ancient Vedic Astrology principles.
         </p>
-
         <form
           onSubmit={handleSubmit}
           className="grid md:grid-cols-2 gap-10 text-gray-800"
@@ -138,9 +139,9 @@ const CompatibilitySection = () => {
           <button
             type="submit"
             onClick={handleSubmit}
-            className="bg-white text-orange-600 font-semibold px-8 py-3 rounded-full shadow-lg hover:bg-orange-100 transition duration-300"
+            className={`${buttonStyle} bg-[#000000] mt-6 lg:mr-[160vh] inline-block`}
           >
-            Check Compatibility
+            Check Compatibility →
           </button>
         </div>
       </div>
